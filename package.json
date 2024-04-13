@@ -1,0 +1,41 @@
+{
+  "name": "@lukethacoder/lwrjs-module-registry",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.12.2",
+  "homepage": "https://developer.salesforce.com/docs/platform/lwr/overview",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukethacoder/lwrjs-lwc-module-provider.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lukethacoder/lwrjs-lwc-module-provider/issues"
+  },
+  "type": "module",
+  "types": "src/index.d.ts",
+  "module": "src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js"
+    },
+    "./externals-module-provider": {
+      "import": "./src/externals-module-provider.js"
+    }
+  },
+  "files": [
+    "src/**/*.js",
+    "src/**/*.d.ts"
+  ],
+  "dependencies": {
+    "@lwrjs/config": "0.12.2",
+    "@lwrjs/diagnostics": "0.12.2",
+    "@lwrjs/shared-utils": "0.12.2",
+    "fs-extra": "^11.1.1",
+    "rollup": "^2.78.0"
+  },
+  "devDependencies": {
+    "@lwrjs/types": "0.12.2"
+  }
+}
