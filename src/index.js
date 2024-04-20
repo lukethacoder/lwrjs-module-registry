@@ -21,6 +21,17 @@ import { getModuleRecord } from './module-record.js'
 import amdLinkingStrategy from './linker/strategies/amd-strategy.js'
 import esmLinkingStrategy from './linker/strategies/esm-strategy.js'
 import { getBundleSignature } from './signature.js'
+
+/**
+ * Add windows support
+ */
+function fixSpecifier(specifier) {
+  if (specifier.includes('#')) {
+    return specifier.replaceAll('\\', '/')
+  }
+  return specifier
+}
+
 export class LwrModuleRegistry {
   constructor(context, globalConfig, registries) {
     this.providers = []
@@ -76,7 +87,7 @@ export class LwrModuleRegistry {
       runtimeParams,
       signature
     )
-    return uri
+    return fixSpecifier(uri)
   }
   async resolveModuleUri(
     moduleId,
@@ -162,7 +173,9 @@ export class LwrModuleRegistry {
     return this.delegateGetModuleEntryOnServices(moduleId, runtimeParams)
   }
   async getModule(moduleId, runtimeParams) {
-    const moduleEntry = await this.getModuleEntry(moduleId, runtimeParams)
+    let moduleEntry = await this.getModuleEntry(moduleId, runtimeParams)
+    moduleEntry.specifier = fixSpecifier(moduleEntry.specifier)
+
     const cacheDisabled = process.env.NOCACHE === 'true'
     if (cacheDisabled === false && this.moduleDefCache.has(moduleEntry.id)) {
       // TODO add to profiling
@@ -185,6 +198,7 @@ export class LwrModuleRegistry {
       moduleId,
       runtimeParams
     ) // provider source + hash
+
     const moduleRecord = await getModuleRecord(
       moduleCompiled,
       this,
@@ -360,6 +374,7 @@ export class LwrModuleRegistry {
   // -- Service delegation ----------------------------------------------
   async delegateGetModuleEntryOnServices(moduleId, runtimeParams) {
     for (const registry of this.providers) {
+      moduleId.specifier = fixSpecifier(moduleId.specifier)
       // eslint-disable-next-line no-await-in-loop
       const result = await registry.getModuleEntry(moduleId, runtimeParams)
       if (result) {

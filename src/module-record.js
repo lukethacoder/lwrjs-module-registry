@@ -4,6 +4,7 @@ import {
   getImportMetadata,
   ModuleNameType,
 } from '@lwrjs/shared-utils'
+
 async function resolveRelativeImport(
   registry,
   moduleSpecifier,
@@ -16,17 +17,47 @@ async function resolveRelativeImport(
   // eg: "c/app#app.html" => "c/app"
   // eg: "some/specifier#file" => "some/specifier"
   const [importeeSpecifier, importeePath] = importeeEntry.specifier.split('#')
+
+  /**
+   * Check if the requesting file is an index.(js|ts) file.
+   *
+   * Relative imports from index files is slightly different due to
+   * the nature of JavaScript.
+   */
+  const isIndexJs =
+    importeeEntry.entry.endsWith('index.js') ||
+    importeeEntry.entry.endsWith('index.ts')
+
   if (importeePath) {
-    // If the importer is ALSO a relative path, join it with the import string to get a path relative to the package specifier
-    // 'some/module#folder/file' imports './siblingFile' => 'some/module#folder/siblingFile'
-    moduleSpecifier = `./${path.join(importeePath, '..', moduleSpecifier)}`
+    /**
+     * If the importer is ALSO a relative path, join it with the import string to get
+     * a path relative to the package specifier.
+     * eg: 'some/module#folder/file' imports './siblingFile' => 'some/module#folder/siblingFile'
+     *
+     * appending `.replace(/\\/g, '/')` magically adds windows issues
+     */
+    moduleSpecifier = `./${path
+      .join(importeePath, '..', moduleSpecifier)
+      .replace(/\\/g, '/')}`
   }
+
   // Maintain a # in the specifier for the relative import,
   //      so it can be identified later
   // eg: "c/app" & "./app.html" => "c/app#app.html"
   // eg: "some/specifier" & "./utils/file" => "some/specifier#utils/file"
   // TODO: This won't work for nested structures (ex. ../)
-  const specifier = `${importeeSpecifier}#${moduleSpecifier.substr(2)}`
+  let specifier = `${importeeSpecifier}#${moduleSpecifier.substr(2)}`
+
+  // adds support for sibling imports from an `index.(js|ts)` file
+  // don't forget windows support 😉
+  if (isIndexJs && importeePath) {
+    const indexBasedPath = path
+      .join('./', importeePath, moduleSpecifier)
+      .replace(/\\/g, '/')
+
+    specifier = `${importeeSpecifier}#${indexBasedPath}`
+  }
+
   const { namespace, name } = explodeSpecifier(specifier)
   const dependencyModuleEntry = await registry.getModuleEntry(
     {
@@ -46,6 +77,7 @@ async function resolveRelativeImport(
     locations: [location],
   }
 }
+
 async function resolveExternalImport(
   registry,
   moduleSpecifier,
@@ -74,6 +106,7 @@ async function resolveExternalImport(
     interchangeable: dependencyModuleEntry.interchangeable,
   }
 }
+
 export async function getModuleRecord(compiledModule, registry, runtimeParams) {
   const imports = []
   const dynamicImports = []
@@ -104,6 +137,7 @@ export async function getModuleRecord(compiledModule, registry, runtimeParams) {
       // Check for dupes first
       if (!visitedImports.has(moduleSpecifier)) {
         visitedImports.add(moduleSpecifier)
+
         if (moduleSpecifier.startsWith('.')) {
           // Import string is a relative path
           // eslint-disable-next-line no-await-in-loop
@@ -219,9 +253,11 @@ export async function getModuleRecord(compiledModule, registry, runtimeParams) {
       }
     }
   }
+
   return {
     imports,
     dynamicImports,
     importMeta,
   }
 }
+//# sourceMappingURL=module-record.js.map
