@@ -1,17 +1,18 @@
 {
   "name": "@lukethacoder/lwrjs-module-registry",
+  "description": "⚡ An opinionated edit to the @lwrjs/module-registry package to add Windows Support and bug fixes.",
+  "version": "0.12.2",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.12.2",
-  "homepage": "https://developer.salesforce.com/docs/platform/lwr/overview",
+  "homepage": "https://github.com/lukethacoder/lwrjs-module-registry",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lukethacoder/lwrjs-lwc-module-provider.git"
+    "url": "https://github.com/lukethacoder/lwrjs-module-registry.git"
   },
   "bugs": {
-    "url": "https://github.com/lukethacoder/lwrjs-lwc-module-provider/issues"
+    "url": "https://github.com/lukethacoder/lwrjs-module-registry/issues"
   },
   "type": "module",
   "types": "src/index.d.ts",

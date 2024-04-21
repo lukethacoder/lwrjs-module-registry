@@ -1,12 +1,12 @@
 # lwrjs-module-registry
 
-⚡ An opinionated edit to the [`@lwrjs/module-registry`](https://www.npmjs.com/package/@lwrjs/module-registry) package.
+⚡ An opinionated edit to the [`@lwrjs/module-registry`](https://www.npmjs.com/package/@lwrjs/module-registry) package with windows support and bug fixes.
 
 ## Fixes
 
 ### Windows Support
 
-Several issues have been raised around Windows specific issues when running both LWR and `lightning-base-components.
+Several issues have been raised around Windows specific issues when running both LWR and [`lightning-base-components`](https://www.npmjs.com/package/lightning-base-components).
 
 - [Issue with using LWC base components <lightning-input> with the LWR Single Page Application - salesforce/lwc/issues/2993](https://github.com/salesforce/lwc/issues/2993)
 - [Nested Module Imports are not resolved in LWC (but work on-platform) - salesforce/lwc/issues/3495](https://github.com/salesforce/lwc/issues/3495)
