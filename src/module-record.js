@@ -85,12 +85,14 @@ async function resolveExternalImport(
   location,
   runtimeParams
 ) {
-  const { namespace, name, specifier } = explodeSpecifier(moduleSpecifier)
+  const { namespace, name, specifier, version } =
+    explodeSpecifier(moduleSpecifier)
   const { entry, virtual } = importeeEntry
   const moduleEntryRoot = virtual ? undefined : path.dirname(entry)
   const dependencyModuleEntry = await registry.getModuleEntry(
     {
       specifier: moduleSpecifier,
+      version,
       importer: moduleEntryRoot,
     },
     runtimeParams
@@ -188,11 +190,12 @@ export async function getModuleRecord(compiledModule, registry, runtimeParams) {
       if (!visitedDynamicImports.has(moduleSpecifier)) {
         visitedDynamicImports.add(moduleSpecifier)
         if (moduleNameType === ModuleNameType.unresolved) {
+          const { version = '' } = explodeSpecifier(moduleSpecifier)
           // mark variable dynamic imports
           dynamicImports.push({
             specifier: moduleSpecifier,
             sourceSpecifier: moduleSpecifier,
-            version: '',
+            version,
             name: moduleNameType,
             moduleNameType,
             locations: [

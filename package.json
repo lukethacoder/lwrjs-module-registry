@@ -1,7 +1,7 @@
 {
   "name": "@lukethacoder/lwrjs-module-registry",
   "description": "⚡ An opinionated edit to the @lwrjs/module-registry package to add Windows Support and bug fixes.",
-  "version": "0.12.2",
+  "version": "0.16.2",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
@@ -30,13 +30,13 @@
     "src/**/*.d.ts"
   ],
   "dependencies": {
-    "@lwrjs/config": "0.12.2",
-    "@lwrjs/diagnostics": "0.12.2",
-    "@lwrjs/shared-utils": "0.12.2",
-    "fs-extra": "^11.1.1",
+    "@lwrjs/config": "0.16.2",
+    "@lwrjs/diagnostics": "0.16.2",
+    "@lwrjs/shared-utils": "0.16.2",
+    "fs-extra": "^11.3.0",
     "rollup": "^2.78.0"
   },
   "devDependencies": {
-    "@lwrjs/types": "0.12.2"
+    "@lwrjs/types": "0.16.2"
   }
 }

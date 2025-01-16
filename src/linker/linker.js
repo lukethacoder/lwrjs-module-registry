@@ -4,7 +4,7 @@ import {
   getSpecifier,
   ModuleNameType,
 } from '@lwrjs/shared-utils'
-import { getBundleSignature } from '../signature.js'
+
 /**
  * Link the compiledSource of a module source with the versioned ModuleRecord imports using a specific linking strategy
  * @param moduleDef
@@ -65,12 +65,14 @@ export async function link(
           runtimeEnvironment.format === 'esm' &&
           exclude?.includes(importRef.specifier)
         ) {
-          signature = await getBundleSignature(
-            importRef,
-            moduleRegistry,
-            runtimeParams,
-            exclude
-          )
+          signature = await moduleRegistry
+            .getBundleSigner()
+            .getBundleSignature(
+              importRef,
+              runtimeEnvironment,
+              runtimeParams,
+              exclude
+            )
         }
         const { locations, sourceSpecifier } = importRef
         const link = strategy(
@@ -114,12 +116,14 @@ export async function link(
           runtimeEnvironment.bundle &&
           runtimeEnvironment.format === 'esm'
         ) {
-          signature = await getBundleSignature(
-            importRef,
-            moduleRegistry,
-            runtimeParams,
-            exclude
-          )
+          signature = await moduleRegistry
+            .getBundleSigner()
+            .getBundleSignature(
+              importRef,
+              runtimeEnvironment,
+              runtimeParams,
+              exclude
+            )
         }
         // always link [literal] dynamic imports as versioned specifiers (AMD strategy)
         // linking them as URIs (ESM strategy) causes caching issues since they can contain stale signatures
@@ -192,12 +196,14 @@ export async function link(
     let signature
     if (esmLoaderModule && runtimeEnvironment.bundle) {
       // Ensure the ESM loader is signed, or there may be a clash between this import and an existing one
-      signature = await getBundleSignature(
-        { version, specifier },
-        moduleRegistry,
-        runtimeParams,
-        exclude
-      )
+      signature = await moduleRegistry
+        .getBundleSigner()
+        .getBundleSignature(
+          { version, specifier },
+          runtimeEnvironment,
+          runtimeParams,
+          exclude
+        )
     }
     const loaderLink = strategy(
       { specifier, version },

@@ -20,7 +20,6 @@ import { link } from './linker/linker.js'
 import { getModuleRecord } from './module-record.js'
 import amdLinkingStrategy from './linker/strategies/amd-strategy.js'
 import esmLinkingStrategy from './linker/strategies/esm-strategy.js'
-import { getBundleSignature } from './signature.js'
 
 /**
  * Add windows support
@@ -53,6 +52,7 @@ export class LwrModuleRegistry {
     }
     context.appObserver.onModuleSourceChange(
       async ({ payload: moduleCompiled }) => {
+        // module source change events are triggered from the lwc-module-provider
         const id = moduleCompiled.id
         if (!this.moduleDefCache.has(id)) {
           logger.warn({
@@ -74,6 +74,7 @@ export class LwrModuleRegistry {
               module.runtimeParams
             )
             // emit changes for each module definition already cached
+            // subscribed: Module Bundler, View Registry, HMR Middleware
             this.emitter.notifyModuleDefinitionChanged(moduleDefinition)
           }
         }
@@ -120,12 +121,13 @@ export class LwrModuleRegistry {
           bundleGroups && getGroupName(moduleId.specifier, bundleGroups)
       }
       return new Promise((resolve, reject) => {
-        getBundleSignature(
-          moduleId,
-          this,
-          runtimeParams,
-          this.globalConfig?.bundleConfig?.exclude
-        )
+        this.bundleSigner
+          .getBundleSignature(
+            moduleId,
+            runtimeEnvironment,
+            runtimeParams,
+            this.globalConfig?.bundleConfig?.exclude
+          )
           .then((bundleSignature) =>
             resolve(
               esmLinkingStrategy(
@@ -159,6 +161,12 @@ export class LwrModuleRegistry {
           .catch(reject)
       })
     }
+  }
+  setBundleSigner(bundleSigner) {
+    this.bundleSigner = bundleSigner
+  }
+  getBundleSigner() {
+    return this.bundleSigner
   }
   // -- Public API --------------------------------------------------------------------
   addModuleProviders(registries) {
@@ -213,6 +221,7 @@ export class LwrModuleRegistry {
     const { format, compat, debug, minify, bundle } = runtimeEnvironment
     const locale = runtimeParams?.['locale']
     const environment = runtimeParams?.['environment']
+    const ssr = runtimeParams?.['ssr']
     const {
       locker: { enabled: lockerEnabled },
     } = this.globalConfig
@@ -228,6 +237,7 @@ export class LwrModuleRegistry {
         lockerEnabled,
         locale,
         environment,
+        ssr,
       })
       const moduleLinked = moduleLinks.get(runtimeEnvKey)
       if (moduleLinked) {
@@ -270,6 +280,7 @@ export class LwrModuleRegistry {
           lockerEnabled,
           locale,
           environment,
+          ssr,
         }),
         moduleLinked
       )
@@ -374,7 +385,6 @@ export class LwrModuleRegistry {
   // -- Service delegation ----------------------------------------------
   async delegateGetModuleEntryOnServices(moduleId, runtimeParams) {
     for (const registry of this.providers) {
-      moduleId.specifier = fixSpecifier(moduleId.specifier)
       // eslint-disable-next-line no-await-in-loop
       const result = await registry.getModuleEntry(moduleId, runtimeParams)
       if (result) {
